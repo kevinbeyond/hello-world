@@ -5,7 +5,7 @@
                       http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          version="3.0" metadata-complete="true">
 
-  <display-name>Archetype Created Web Application</display-name>
+  <display-name>hello-world</display-name>
 
   <!--SpringMVC本质上是一个Servlet-->
   <!--load-on-startup标记容器是否在启动的时候就加载这个servlet。当值为0或者大于0时，表示容器在应用启动时就加载这个servlet；
