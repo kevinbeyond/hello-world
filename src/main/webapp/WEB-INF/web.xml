@@ -26,6 +26,17 @@
     <url-pattern>/</url-pattern>
   </servlet-mapping>
   <!--SpringMVC配置start-->
+  
+  <!--处理异步请求的Servlet示例-->
+  <servlet>
+    <servlet-name>WorkServlet</servlet-name>
+    <servlet-class>com.demo.servlet.WorkServlet</servlet-class>
+    <async-supported>true</async-supported><!--在使用Servlet3.0异步请求的功能时需要在配置Servlet时将async-supported设置为true-->
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>WorkServlet</servlet-name>
+    <url-pattern>/work</url-pattern>
+  </servlet-mapping>
 
 
 </web-app>
