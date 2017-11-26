@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       ">
+
+    <context:annotation-config />
+    <!--扫描包，除Controller之外由Spring管理-->
+    <!--
+        use-default-filters的作用没有完全理解，网上的资料并不能解决我的疑问
+        如果我把Service注释掉，那么@Service注解的则不能完成依赖注入
+        按道理，exclude只会把@RestController的加入黑名单，仍会扫描@Service注解
+        但是实际测试却不是这个样子，疑惑。。。
+    -->
+    <context:component-scan base-package="com.demo" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Service" />
+        <context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.RestController"/>
+    </context:component-scan>
+
+    <!--配置整合mybatis过程-->
+    <!--1、配置数据库相关参数，引入属性文件-->
+    <context:property-placeholder location="classpath:jdbc.properties" />
+
+    <!--2、数据库连接池，此处为c3p0连接池-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <!--配置连接池属性-->
+        <property name="driverClass" value="${jdbc.driver}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+
+        <!--c3p0连接池私有属性-->
+        <property name="maxPoolSize" value="30"/>
+        <property name="minPoolSize" value="10"/>
+        <!--关闭连接后不自动commit-->
+        <property name="autoCommitOnClose" value="false"/>
+        <!--获取连接超时时间-->
+        <property name="checkoutTimeout" value="1000"/>
+        <!--当前取连接失败重试次数-->
+        <property name="acquireRetryAttempts" value="2"/>
+    </bean>
+
+    <!--3、配置sqlSessionFactory对象-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--注入数据库连接池-->
+        <property name="dataSource" ref="dataSource"/>
+        <!--配置Mybatis全局配置文件-->
+        <property name="configLocation" value="classpath:mybatis/mybatis-config.xml"/>
+        <!--扫描Entity包，使用包名-->
+        <property name="typeAliasesPackage" value="com.demo.entity"/>
+        <!--扫描sql配置文件：mapper需要的配置文件-->
+        <property name="mapperLocations" value="classpath:mybatis/mapper/*Mapper.xml"/>
+    </bean>
+
+    <!--4、配置扫描DAO接口包，动态实现dao接口，注入到Spring容器中-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--注入sqlSessionFactory-->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!--给出需要扫描DAO接口包-->
+        <property name="basePackage" value="com.demo.dao"/>
+    </bean>
+
+
+
+    <!--配置事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property><!--注入连接池-->
+    </bean>
+
+    <!--配置业务层的代理-->
+    <bean id="transactionProxyFactory" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="transactionManager" ref="transactionManager"></property><!--配置事务管理器-->
+        <property name="target" ref="accountService"></property><!--配置目标对象-->
+        <property name="transactionAttributes"><!--配置事务属性-->
+            <props>
+                <!--
+                    prop的格式:
+                        * PROPAGATION :事务的传播行为。
+                        * ISOLATION : 事务的隔离级别
+                        * readOnly : 只读
+                        * -Exception : 发生哪些异常回滚事务，默认所有异常回滚事务
+                        * +Exception : 发生哪些异常不回滚
+                -->
+                <!--<prop key="insert*">PROPAGATION_REQUIRED</prop>
+                <prop key="update*">PROPAGATION_REQUIRED</prop>
+                <prop key="*">PROPAGATION_REQUIRED,readOnly</prop>-->
+                <prop key="transfer">PROPAGATION_REQUIRED,readOnly</prop>
+            </props>
+        </property>
+    </bean>
+
+
+    <!--配置事务管理的模板，Spring为了简化事务管理的代码而提供的类-->
+    <bean id="transactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="transactionManager" ref="transactionManager"></property><!--注入事务管理器-->
+    </bean>
+</beans>

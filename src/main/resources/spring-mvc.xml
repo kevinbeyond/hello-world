@@ -14,8 +14,9 @@
     <!--context:component-scan扫描通过注释配置的类
         context:include-filter设置只扫描@Controller，别的交给Spring容器
     -->
-    <context:component-scan base-package="com.demo" use-default-filters="false">
-        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    <context:component-scan base-package="com.demo.controller" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+        <context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.RestController"/>
     </context:component-scan>
 
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">

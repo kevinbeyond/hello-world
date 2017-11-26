@@ -7,6 +7,19 @@
 
   <display-name>hello-world</display-name>
 
+  <!--集成Spring配置，用于加载除Web层的Bean（如DAO、Service等）-->
+  <!--ContextLoaderListener 初始化的上下文加载的 Bean 是对于整个应用程序共享的，不管是使用什么表现层技术，一
+    般如 DAO 层、Service 层 Bean；
+    DispatcherServlet 初始化的上下文加载的 Bean 是只对 Spring Web MVC 有效的 Bean，如 Controller、
+    HandlerMapping、HandlerAdapter 等等，该初始化上下文应该只加载 Web 相关组件。-->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:spring.xml</param-value>
+  </context-param>
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+
   <!--SpringMVC本质上是一个Servlet-->
   <!--load-on-startup标记容器是否在启动的时候就加载这个servlet。当值为0或者大于0时，表示容器在应用启动时就加载这个servlet；
     当是一个负数时或者没有指定时，则指示容器在该servlet被选择时才加载。
